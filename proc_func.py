@@ -79,3 +79,30 @@ def gaussian_blurring(img, sz = 9, sigma = 1.4):
                     sum = int(sum)
                     img2[r][c][ch] = max(0, min(sum, 255))
     return img2
+
+def laplacian_edge_detection(img):
+    img1 = gaussian_blurring(img)
+    kernel = np.array([[1, 1, 1], [1, -8, 1], [1, 1, 1]])
+    img2 = img1.copy()
+    rws, cols, channels = img1.shape
+    for ch in range(0, channels):
+        for r in range(0, rws):
+            for c in range(0, cols):
+                sum = 0
+                for dr in range(-1, 2):
+                    for dc in range(-1, 2):
+                        if r + dr >= 0 and r + dr < rws and c + dc >= 0 and c + dc < cols:
+                            sum += kernel[1 + dr][1 + dc] * img1[r + dr][c + dc][ch]
+                img2[r][c][ch] = max(min(sum, 255), 0)
+    return img2
+
+def unsharp_masking(img, amp_factor):
+    img1 = gaussian_blurring(img)
+    rws, cols, channels = img1.shape
+    img2 = np.zeros((rws, cols, channels), dtype=np.float64)
+    for ch in range(0, channels):
+        for r in range(0, rws):
+            for c in range(0, cols):
+                x = min(max(0, int(int(img[r][c][ch]) + amp_factor * (int(img[r][c][ch]) - int(img1[r][c][ch])))), 255)
+                img2[r][c][ch] = x
+    return img2.astype(np.uint8)
